@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n staticfiles %}
+{% block title %}{% trans 'Index' %}{% endblock %}
+{% block breadcrumbs %}
+    <i class="fa fa-home"></i> <a href="{% url 'index' %}">{% trans 'Home' %}</a>
+{% endblock %}
+{% block content %}
+    <div class="gotocydia">
+        <a href="cydia://url/https://cydia.saurik.com/api/share#?source={{ request.scheme }}://{{ site }}"
+           target="_blank">
+            <img src="{% static "img/cydia.png" %}"/>
+            <div class="label"><p>{% trans "Add in Cydia<sup><small>™</small></sup>" %}</p></div>
+            <div class="clear"></div>
+        </a>
+    </div>
+    <div class="content-list index-package-list">
+        <div class="title"><h2>{% trans "Package List" %}</h2></div>
+        {% include 'grid-list.html' %}
+        <div class="clear"></div>
+        {% include 'pagination.html' %}
+    </div>
+{% endblock %}
+{% block footerscript %}
+    <script type="text/javascript">
+        function breadcrumbs() {
+            if ($(window).width() <= 985) {
+                $('.breadcrumbs').hide();
+            }
+            else {
+                $('.breadcrumbs').show();
+            }
+        }
+        $(document).ready(function () {
+            breadcrumbs();
+        });
+        $(window).resize(function () {
+            breadcrumbs();
+        });
+    </script>
+{% endblock %}

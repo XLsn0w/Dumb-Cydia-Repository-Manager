@@ -1,0 +1,18 @@
+{% extends 'admin/new_change_form.html' %}
+
+{% load i18n admin_urls %}
+
+{% block object-tools %}
+    {{ block.super }}
+    <ul class="object-tools">
+        <li class="heading">{% trans 'Links' %}</li>
+        <li>
+            <a href="http://www.saurik.com/id/7" target="_blank">
+                <i class="fa fa-fw fa-link"></i>{% trans "Saurik's Cydia" %}</a>
+        </li>
+        <li>
+            <a href="https://wiki.debian.org/RepositoryFormat" target="_blank">
+                <i class="fa fa-fw fa-link"></i>{% trans 'Repository Format' %}</a>
+        </li>
+    </ul>
+{% endblock %}

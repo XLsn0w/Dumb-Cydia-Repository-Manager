@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% load i18n staticfiles %}
+{% block title %}{% trans "Package" %} {{ package_info.c_name | default:_("Untitled Package") }}{% endblock %}
+{% block stylesheet %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "css/package-info.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/font-awesome.min.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/emoji.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/jquery.fancybox.min.css" %}"/>
+{% endblock %}
+{% block breadcrumbs %}
+    <i class="fa fa-home"></i> <a href="{% url 'index' %}">{% trans 'Home' %}</a>
+    {% if package_info.c_section %}
+        <i class="fa fa-angle-right"></i>
+        <a href="{% url "section_id" package_info.c_section.id %}">{{ package_info.c_section }}</a>
+    {% endif %}
+    <i class="fa fa-angle-right"></i>
+    <a href="{{ package_info.get_absolute_url }}">{{ package_info.c_name | default:_("Untitled Package") }}</a>
+{% endblock %}
+{% block content %}
+    <div class="article">
+
+        <div class="icon">
+            {% if package_info.display_icon %}
+                <img class="icon" src="{{ package_info.display_icon }}"/>
+            {% else %}
+                <img class="icon" src="{% static 'img/default-package-icon.png' %}"/>
+            {% endif %}
+        </div>
+        <div class="title"><h1>{{ package_info.c_name | default:_("Untitled Package") }}</h1></div>
+        <div class="intro">
+            <div class="details">
+                <ul>
+                    <li>{% trans "Package" %}: {{ package_info.c_package }}</li>
+                    <li>{% trans "Version" %}: {{ package_info.c_version }}</li>
+                    {% if package_info.c_section %}
+                        <li>{% trans "Section" %}: {{ package_info.c_section }}</li>
+                    {% endif %}
+                    <li>{% trans "Size" %}: {{ package_info.c_size|filesizeformat }}</li>
+                    {% if package_info.author_name %}
+                        <li>
+                            {% if package_info.author_email or package_info.maintainer_email or package_info.sponsor_site %}
+                                {% trans "Author" %}: <a
+                                    href="{% url "package_action" package_info.id "contact" %}">{{ package_info.author_name }}</a>
+                            {% else %}
+                                {% trans "Author" %}: {{ package_info.author_name }}
+                            {% endif %}
+                        </li>
+                    {% endif %}
+                </ul>
+                <div class="clear"></div>
+            </div>
+            {% if not settings.download_cydia_only %}
+                <div class="download">
+                    <a rel="nofollow" href="{{ package_info.frontend_link }}" id="downloadlink"
+                       target="_blank">{% trans "Download" %}
+                        {% if settings.download_count %}
+                            <br/>{{ package_info.download_times }}
+                        {% endif %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="clear"></div>
+        <div class="compatibility" style="display: none;">
+            <p></p>
+        </div>
+
+        <div class="clear"></div>
+        <div class="description">
+            <label>
+                <h2>{% trans "Description" %}</h2>
+                {% if package_info.c_homepage %}
+                    <a target="_blank" href="{{ package_info.c_homepage }}">{% trans "More Info" %}</a>
+                {% endif %}
+            </label>
+            <div class="clear"></div>
+            <p>
+                {% if package_info.rich_description %}
+                    {% autoescape off %}
+                        {{ package_info.rich_description }}
+                    {% endautoescape %}
+                {% else %}
+                    {{ package_info.c_description | default:_("No description.") }}
+                {% endif %}
+            </p>
+        </div>
+
+        {% if package_info.update_logs %}
+            <div class="clear"></div>
+            <div class="whatsnew">
+                <label>
+                    <h2>{% trans "What's New" %}</h2>
+                    {% if settings.version_history %}
+                        <a href="{% url "package_action" package_info.id "history" %}">{% trans "History" %}</a>
+                    {% endif %}
+                </label>
+                <div class="version"><p>{% trans "Version" %}: {{ package_info.c_version }}</p>
+                    <span>{{ package_info.created_at | date:"Y-m-d H:i" }}</span></div>
+                <p>
+                    {{ package_info.update_logs | linebreaksbr }}
+                </p>
+            </div>
+        {% endif %}
+
+        {% if gallery %}
+            <div class="clear"></div>
+            <div class="screenshot">
+                <label>
+                    <h2>{% trans "Screenshot" %}</h2>
+                </label>
+                <div class="image">
+                    <div class="image-wrapper">
+                        <ul>
+                            {% for photo in gallery.public %}
+                                <li>
+                                    <a data-fancybox="images"
+                                       data-caption="{{ package_info.c_name | default:_("Untitled Package") }}"
+                                       href="{{ photo.get_display_url }}">
+                                        <img src="{{ photo.get_display_url }}" alt="{{ photo.title }}">
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+    {% if settings.enable_comments %}
+        <div class="comments" id="comments">
+            <h2>{% trans "Comments" %}</h2>
+            <div id="comments" style="padding: 12px">
+                {% load comments static threadedcomments_tags %}
+                <link rel="stylesheet" type="text/css" href="{% static 'fluent_comments/css/ajaxcomments.css' %}"/>
+                <script type="text/javascript" src="{% static 'fluent_comments/js/ajaxcomments.js' %}"></script>
+                <script src="{% static 'js/config.js' %}"></script>
+                <script src="{% static 'js/util.js' %}"></script>
+                <script src="{% static 'js/jquery.emojiarea.js' %}"></script>
+                <script src="{% static 'js/emoji-picker.js' %}"></script>
+                {% render_comment_list for object %}
+                {% render_comment_form for object %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+{% block latest_comments %}
+{% endblock %}
+{% block footerscript %}
+    {{ block.super }}
+    <script type="application/javascript" src="{% static 'js/jquery.fancybox.min.js' %}"></script>
+    <script type="text/javascript">
+        function nice() {
+            if ($(window).width() <= 985 && 482 <= $(window).width()) {
+                $('.image').css('width', '100%');
+            }
+            else if ($(window).width() <= 482) {
+                var width = $(".content").width();
+                width = width - 30;
+                $('.image').css('width', width + 'px');
+            }
+        }
+        $(window).resize(function () {
+            nice();
+        });
+        $(function () {
+            $('.article .description a').attr("target", "_blank");
+
+            var $comment_area = $('.comments textarea');
+            $comment_area.attr('data-emojiable', 'true');
+            $comment_area.attr('data-emoji-input', 'unicode');
+            $('.controls.col-sm-10').css('position', 'relative');
+            nice();
+
+            // In Cydia
+            if (navigator.userAgent.search(/Cydia/) !== -1) {
+                function parse_query_string(query) {
+                    var vars = query.split("&");
+                    var query_string = {};
+                    for (var i = 0; i < vars.length; i++) {
+                        var pair = vars[i].split("=");
+                        // If first entry with this name
+                        if (typeof query_string[pair[0]] === "undefined") {
+                            query_string[pair[0]] = decodeURIComponent(pair[1]);
+                            // If second entry with this name
+                        } else if (typeof query_string[pair[0]] === "string") {
+                            query_string[pair[0]] = [query_string[pair[0]], decodeURIComponent(pair[1])];
+                            // If third or later entry with this name
+                        } else {
+                            query_string[pair[0]].push(decodeURIComponent(pair[1]));
+                        }
+                    }
+                    return query_string;
+                }
+
+                var query = window.location.search.substring(1);
+                var qs = parse_query_string(query);
+                var history_mode = false;
+                if (typeof(qs.history) === "string" && qs.history === "1") {
+                    history_mode = true;
+                }
+
+                $('a').attr("target", "_blank");
+                $('.main').addClass("bg-cydia");
+
+                $('.breadcrumbs').remove();
+                $('.footer').remove();
+                var $widget = $('.widget-area');
+                if ($widget.children().length) {
+                    $widget.css("margin", "auto");
+                    $widget.css("padding", "0");
+                } else {
+                    $widget.remove();
+                }
+                if (!history_mode) {
+                    $('.icon').remove();
+                    $('.title').remove();
+                    $('.intro').remove();
+                } else {
+                    $('.download').hide();
+                }
+
+            }
+
+            // Comments
+            if ($comment_area.length) {
+                $comment_area.attr('placeholder', '{% trans "Say something..." %}');
+                // Initializes and creates emoji set from sprite sheet
+                window.emojiPicker = new EmojiPicker({
+                    assetsPath: '{% static 'img' %}',
+                    emojiable_selector: '[data-emojiable=true]',
+                    popupButtonClasses: 'fa fa-smile-o'
+                });
+                // Finds all elements with `emojiable_selector` and converts them to rich emoji input fields
+                // You may want to delay this step if you have dynamically created input fields that appear later in the loading process
+                // It can be called as many times as necessary; previously converted input fields will not be converted again
+                window.emojiPicker.discover();
+            }
+
+            // Compatibility Check
+            var os_compatibility = '';
+            var version = (navigator.userAgent.match(/.+(?:Version)[\/: ]([\d.]+)/) || [])[1];
+            if (!version) {
+                version = (navigator.userAgent.match(/.+(?:Mobile)[\/: ]([\S.]+)/) || [])[1];
+            }
+            var device = '{{ request.META.HTTP_X_MACHINE | default:"UNDEFINE" }}';
+            var device_type = '';
+            // Print os compatibility list as an array
+            {% for os in package_info.os_compatibility.all %}
+                os_compatibility += '{{ os.descriptor }}|' + '{{ os.build }}|';
+            {% endfor %}
+            // Print device compatibility list as a string
+            {% for device in package_info.device_compatibility.all %}
+                device_type += '{{ device.subtype }}|';
+            {% endfor %}
+            // Check os compatibility
+            if (device !== "UNDEFINE" && os_compatibility && device_type) {
+                var $comp = $('.compatibility p');
+                if (os_compatibility.search(version) !== -1 && device_type.search(device) !== -1) {
+                    $comp.removeClass("no");
+                    $comp.addClass("ok");
+                    $comp.html("<i class=\"fa fa-check\" aria-hidden=\"true\"></i>{% trans 'Your device supports this package' %}");
+                } else {
+                    $comp.removeClass("ok");
+                    $comp.addClass("no");
+                    $comp.html("<i class=\"fa fa-times\" aria-hidden=\"true\"></i>{% trans "Your device doesn't support this package" %}");
+                }
+                $('.compatibility').show();
+            } else {
+                $('.compatibility').hide();
+            }
+        })
+    </script>
+{% endblock %}

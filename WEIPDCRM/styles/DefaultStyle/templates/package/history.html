@@ -1,0 +1,41 @@
+{% extends "package/package.html" %}
+{% load i18n staticfiles %}
+{% block title %}{% blocktrans with package_info.c_name as c_name %}History {{ c_name }}{% endblocktrans %}{% endblock %}
+
+{% block content %}
+    <div class="article">
+        {% for version in version_list %}
+            <div class="update-log">
+                <div class="version">
+                    <p>{{ version.c_version }}</p>
+                    <span>{{ version.created_at | date:"Y-m-d H:i:s" }}</span>
+                </div>
+                <div class="clear"></div>
+                <p>{{ version.update_logs | linebreaksbr }}</p>
+                <a target="_blank" href="{% url "package_id" version.id %}?history=1">
+                    {% trans "View this version" %} <i class="fa fa-angle-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+{% block footerscript %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // In Cydia
+            if (navigator.userAgent.search(/Cydia/) !== -1) {
+                $('a').attr("target", "_blank");
+                $('.main').addClass("bg-cydia");
+                $('.breadcrumbs').remove();
+                $('.footer').remove();
+                var $widget = $('.widget-area');
+                if ($widget.children().length) {
+                    $widget.css("margin", "auto");
+                    $widget.css("padding", "0");
+                } else {
+                    $widget.remove();
+                }
+            }
+        });
+    </script>
+{% endblock %}

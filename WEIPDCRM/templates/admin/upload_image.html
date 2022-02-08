@@ -1,0 +1,288 @@
+{% extends 'admin/upload.html' %}
+
+{% load suit_forms admin_static i18n %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a> &rsaquo;
+        {% trans "Upload" %} &rsaquo; {% trans "Screenshots" %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            {% trans "Upload Screenshots" %}
+        </div>
+        <div class="card-block">
+            <form style="display:none;" enctype="multipart/form-data" action="" method="post" id="upload_form"
+                  novalidate>
+                {% csrf_token %}
+                {{ form }}
+                <input type="hidden" name="action" value="upload-img">
+                <input type="hidden" name="ajax" value="false">
+                <input type="submit">
+            </form>
+            <div class="drop-area">
+                <div id="drop-title">{{ drop_title }}</div>
+            </div>
+            <div class="drop-list-area">
+                <ul id="drop-list"></ul>
+                <a href="javascript:window.close()"> &lt; {% trans "Back" %}</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function ($) {
+            var nav = document.getElementById('suit-sub-nav');
+            nav.parentNode.removeChild(nav);
+
+            var isUpload = false;
+            var box = document.getElementById('drop-title');
+            var finput = document.getElementById("id_image");
+
+            function box_display(msg) {
+                box.style.color = "#D3D3D3";
+                box.innerText = msg;
+            }
+
+            function box_alert(msg) {
+                box.style.color = "#C0392B";
+                box.innerText = msg;
+            }
+
+            function job_test(job_id) {
+                $.ajax({
+                    url: '',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'action': 'upload-img',
+                        'ajax': true,
+                        'job': job_id
+                    },
+                    success: function (d) {
+                        if (d['result'] === true) {
+                            if (d['job']['is_finished'] === true) {
+                                if (d['job']['result']['success'] === true) {
+                                    // Success, jump to version control
+                                    var version_id = d['job']['result']['version'];
+                                    window.location.href = '/admin/WEIPDCRM/version/' + version_id + '/change/';
+                                } else {
+                                    alert("{% trans 'Exception: ' %}" + d['job']['result']['exception']);
+                                    box_alert("{% trans 'An error occured.' %}");
+                                    isUpload = false;
+                                }
+                            } else if (d['job']['is_failed'] === true) {
+                                box_alert("{% trans 'Service Unavailable.' %}");
+                                isUpload = false;
+                            } else {
+                                window.setTimeout(function () {
+                                    job_test(job_id);
+                                }, 3000);
+                            }
+                        } else {
+                            box_alert("{% trans 'Invalid Job.' %}");
+                            isUpload = false;
+                        }
+                    }
+                });
+            }
+
+            function ajax_upload(file_list, current_index) {
+                isUpload = true;
+                var file = file_list[current_index];
+                var xhr = new XMLHttpRequest();
+                xhr.timeout = 600000; // ms
+                xhr.responseType = "json";
+                xhr.open("POST", "", true);
+                var body = new FormData();
+                body.append("action", "upload-img");
+                body.append("ajax", true);
+                body.append("image", file);
+                body.append("csrfmiddlewaretoken", '{{ csrf_token }}');
+                var node = document.getElementById("file_id_" + current_index);
+                xhr.upload.onloadstart = function (e) {
+                    box_display("{% trans 'Uploading...' %}");
+                    node.style.color = "#5BB0ED";
+                    node.innerText = "[Uploading] " + file.name;
+                };
+                xhr.upload.onprogress = function (e) {
+                    if (e.lengthComputable) {
+                        box_display((e.loaded / e.total * 100).toFixed(2) + "%");
+                    }
+                };
+                xhr.ontimeout = function (e) {
+                    box_display("{% trans 'Transfer Timeout' %}");
+                    node.style.color = "#C0392B";
+                    node.innerText = "[Timeout] " + file.name;
+                };
+                xhr.onload = function (e) {
+                    var single_file = (file_list.length === 1);
+                    if (this.status === 200) {
+                        if (this.response['status'] === true) {
+                            if (this.response['job'] !== null) {
+                                job_id = this.response['job']['id'];
+                                node.style.color = "#27AE60";
+                                if (job_id) {
+                                    if (single_file) {
+                                        window.setTimeout(function () {
+                                            job_test(job_id);
+                                        }, 3000);
+                                    }
+                                    node.innerText = "[Uploaded] " + file.name;
+                                } else {
+                                    if (single_file) {
+                                        var version_id = this.response['job']['result']['version'];
+                                        window.location.href = '../../WEIPDCRM/version/' + version_id + '/change/';
+                                    }
+                                }
+                            }
+                            if (single_file) {
+                                box_display(this.response['msg']);
+                            }
+                        } else {
+                            if (single_file) {
+                                box_alert(this.response['msg']);
+                            }
+                            node.style.color = "#C0392B";
+                            node.innerText = "[Error] " + file.name;
+                        }
+                    } else {
+                        if (single_file) {
+                            box_alert("{% trans 'Service Unavailable: ' %}" + this.status);
+                        }
+                        node.style.color = "#C0392B";
+                        node.innerText = "[Error] " + file.name;
+                    }
+                    if (current_index < file_list.length - 1) {
+                        ajax_upload(file_list, current_index + 1);
+                    } else if (!single_file) {
+                        box_display("{% trans 'Operation Completed.' %}");
+                        isUpload = false;
+                    } else {
+                        isUpload = false;
+                    }
+                };
+                xhr.send(body);
+            }
+
+            function in_array(str,arr) {
+                for (var i = 0, k = arr.length; i < k; i++) {
+                    if (str === arr[i]) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function check_form(file_name) {
+                var extension = file_name.substring(file_name.lastIndexOf('.'), file_name.length).toLowerCase();
+                var allow_ext = ['.png','.jpg','.gif', '.jpeg'];
+                if(in_array(extension,allow_ext)){
+                    return true;
+                }
+                box_alert("{% trans 'Unsupported file extension.' %}");
+                return false;
+            }
+
+            $(document).on({
+                dragleave: function (e) {
+                    e.preventDefault();
+                },
+                drop: function (e) {
+                    e.preventDefault();
+                },
+                dragenter: function (e) {
+                    e.preventDefault();
+                },
+                dragover: function (e) {
+                    e.preventDefault();
+                }
+            });
+            box.addEventListener("click", function (e) {
+                if (isUpload) {
+                    return;
+                }
+                finput.click();
+            }, false);
+            box.addEventListener("dragenter", function (e) {
+                e.preventDefault();
+                if (isUpload) {
+                    return;
+                }
+                box_display("{% trans 'Drop Here!' %}");
+            }, false);
+            box.addEventListener("dragleave", function (e) {
+                e.preventDefault();
+                if (isUpload) {
+                    return;
+                }
+                box_display("{{ drop_title }}");
+            }, false);
+            box.addEventListener("drop", function (e) {
+                e.preventDefault();
+                if (isUpload) {
+                    return;
+                }
+                box_display("{{ drop_title }}");
+                var upload_list = [];
+                var file_list = e.dataTransfer.files;
+                // Check list
+                for (var i = 0; i < file_list.length; i++) {
+                    var file = file_list[i];
+                    if (check_form(file.name)) {
+                        upload_list.push(file);
+                    }
+                }
+                if (upload_list.length === 0) {
+                    return;
+                } else if (upload_list.length > 500) {
+                    box_alert("{% trans "Too many files." %}");
+                    return;
+                }
+                // Display list
+                var drop_list_dom = document.getElementById("drop-list");
+                drop_list_dom.innerHTML = "";
+                for (var j = 0; j < upload_list.length; j++) {
+                    var node = document.createElement("li");
+                    node.id = "file_id_" + j;
+                    node.innerText = "[Ready] " + upload_list[j].name;
+                    drop_list_dom.appendChild(node);
+                }
+                // Upload
+                ajax_upload(upload_list, 0);
+            }, false);
+            finput.addEventListener("change", function (e) {
+                e.preventDefault();
+                if (isUpload) {
+                    return;
+                }
+                if (!check_form(finput.value)) {
+                    return false;
+                }
+                var uform = document.getElementById("upload_form");
+                uform.submit();
+            }, false);
+            var msg = "{{ msg }}";
+            var job_id = "{{ job_id }}";
+            // Do redirect job test
+            if (job_id.length > 0) {
+                isUpload = true;
+                window.setTimeout(function () {
+                    job_test(job_id);
+                }, 3000);
+                if (msg.length > 0) {
+                    box_display(msg);
+                }
+            } else {
+                isUpload = false;
+                if (msg.length > 0) {
+                    box_alert(msg);
+                }
+            }
+        })(django.jQuery);
+    </script>
+{% endblock %}
+

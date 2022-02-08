@@ -1,0 +1,220 @@
+h4 {
+  font-size: 15px;
+}
+
+.comment_name {
+  float: left
+}
+.comment-reply-link {
+    font-size: 14px;
+}
+input,textarea {
+  border-radius: 6px;
+}
+#comment-waiting {
+  line-height: 16px;
+}
+
+#comment-waiting img {
+  vertical-align: middle;
+  padding: 0 4px 0 10px;
+}
+
+#comment-added-message,
+#comment-thanks {
+  padding-left: 10px;
+}
+
+.comments label {
+  height: 20px
+}
+
+.comment-moderated-flag {
+  font-variant: small-caps;
+  margin-left: 5px;
+}
+
+#div_id_honeypot {
+  /* Hide the honeypot from django_comments by default */
+  display: none;
+}
+
+.comments .gravatar {
+    position: absolute;
+}
+
+.comments .gravatar img {
+    width: 46px;
+    border-radius: 6px;
+}
+
+.comment-item{
+  min-height: 48px;
+  position: relative;
+  margin-left: 58px
+}
+
+.comment-item span {
+  padding-left: 3px;
+  color: #A8A8A8;
+  font-size: 12px;
+  font-style: normal
+}
+
+.comment-text p {
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 400;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: pre-wrap
+}
+
+.comments input {
+  height: 40px;
+  border: 1px solid #e5e7ec;
+  width: 50%;
+  padding: 0 10px;
+  -webkit-transition: all .3s ease;
+  -moz-transition: all .3s ease;
+  -ms-transition: all .3s ease;
+  -o-transition: all .3s ease;
+  transition: all .3s ease;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  box-shadow: none;
+  outline:none;
+}
+
+.comments .btn {
+  -webkit-appearance: none;
+  border-radius: 2px;
+  background: rgba(25, 182, 255, 0.9);
+  color: #fff;
+  padding: 14px 0;
+  border: 0;
+  font-size: 16px;
+  font-weight: bold;
+  width: 120px;
+  line-height: 1;
+  height: auto;
+  letter-spacing: .1em;
+  -webkit-transition: color .2s ease-out, background .2s ease-out, border-color .2s ease-out;
+  -moz-transition: color .2s ease-out, background .2s ease-out, border-color .2s ease-out;
+  transition: color .2s ease-out, background .2s ease-out, border-color .2s ease-out;
+  cursor: pointer;
+  margin-right: 0px;
+  float: right;
+}
+
+.comments label{
+  display: inline-block;
+  max-width: 100%;
+  margin-bottom: 10px;
+  font-weight: 400;
+  color: #4d4d4d;
+}
+.comments .form-group {
+  margin-bottom: 20px;
+}
+
+.comments .btn:hover {
+  background: #5d6478;
+  color: #fff;
+}
+
+.comments textarea,.textarea {
+  font-size: 13px;
+  display: block;
+  height: 110px;
+  width: 100%;
+  padding: 10px 14px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  border: 1px solid #e5e7ec;
+  border-color: rgb(239, 239, 239);
+  margin: 0px -1px 0px 0px;
+  -webkit-appearance: none;
+  outline:none;
+  -webkit-user-select: auto;
+}
+/* ---- threaded comments ---- */
+ul.comment-list-wrapper:only-child {
+  /* to avoid touching our own "ul" tags, our tags are explicitly decorated with a class selector */
+  border-bottom: 1px solid #eceef1;
+  padding-bottom:15px!important;
+}
+
+ul.comment-list-wrapper {
+  /* to avoid touching our own "ul" tags, our tags are explicitly decorated with a class selector */
+  margin-left: 0;
+  padding-left: 0;
+  border-bottom: 1px solid #eceef1;
+  padding: 15px 0 15px;
+}
+
+ul.comment-list-wrapper:last-child {
+  /* to avoid touching our own "ul" tags, our tags are explicitly decorated with a class selector */
+  border-bottom: 1px solid #eceef1;
+  padding-bottom:15px;
+}
+
+ul.comment-list-wrapper ul.comment-list-wrapper {
+  margin-left: 48px;
+  padding-left: 0;
+  padding: 12px 0 0;
+  border-bottom:none
+}
+
+ul.comment-list-wrapper ul.comment-list-wrapper:last-child {
+  border-bottom: none;
+}
+ul.comment-list-wrapper ul.comment-list-wrapper .comments-context {
+  padding: 12px 0 0;
+}
+ul.comment-list-wrapper ul.comment-list-wrapper li.comment-wrapper {
+  margin-bottom: 15px;
+  border-top: 1px solid #eceef1;
+}
+
+ul.comment-list-wrapper ul.comment-list-wrapper li.comment-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+ul.comment-list-wrapper ul.comment-list-wrapper ul.comment-list-wrapper {
+  margin-left: 0;
+}
+
+li.comment-wrapper {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.comments-form {
+  padding: 10px 0;
+}
+
+.js-comments-form-orig-position {
+  margin-top: 15px;
+}
+
+.js-comments-form-orig-position .comment-cancel-reply-link {
+  display: none;
+}
+
+@media screen and (max-width: 430px){
+  .comments .gravatar img {
+    width: 36px;
+  }
+
+  .comment-item {
+    margin-left: 42px
+  }
+
+  ul.comment-list-wrapper ul.comment-list-wrapper {
+    margin-left: 36px;
+  }
+}
